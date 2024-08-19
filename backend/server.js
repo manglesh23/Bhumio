@@ -1,13 +1,22 @@
 const express = require("express");
 const { connectDatabase } = require("./databaseConnection/databaseConnection");
 const { router } = require("./authrouter/authrouter");
+const cors = require("cors");
 
 require("dotenv").config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+  })
+);
+
 app.use(express.json());
+
 app.use("/", router);
+
 const PORT = process.env.PORT;
 
 connectDatabase()
