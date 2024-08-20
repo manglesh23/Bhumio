@@ -34,6 +34,9 @@ const PdfEditor = ({ filename }) => {
 
   const handleLoadPdf = async () => {
     const pdfDoc = await PDFDocument.load(pdfBytes);
+
+    const form = pdfDoc.getForm();
+    // const nameField = form.getTextField('Name of Seller or Sellers:');
     setPdfDoc(pdfDoc);
     setEditablePdfBytes(await pdfDoc.save()); // Save initial state
 
