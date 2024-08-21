@@ -12,6 +12,7 @@ const PdfEditor = ({ filename }) => {
   const [editablePdfBytes, setEditablePdfBytes] = useState(null);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [show, setShow] = useState(false);
+  const [pdfFile, setPdfFile] = useState();
 
   useEffect(() => {
     const fetchPdf = async () => {
@@ -20,12 +21,13 @@ const PdfEditor = ({ filename }) => {
         maxBodyLength: Infinity,
         url: "http://localhost:8000/pdf/example.pdf",
         headers: {},
-        responseType: "arraybuffer",
+        // responseType: "arraybuffer",
       };
 
       let response = await axios(config);
 
-      console.log("Response:-", response);
+      console.log("Response:-", response.config.url);
+      setPdfFile(response.config.url);
       //   const arrayBuffer = await response.data.arrayBuffer();
       setPdfBytes(response.data);
     };
@@ -33,34 +35,6 @@ const PdfEditor = ({ filename }) => {
   }, [filename]);
 
   const handleLoadPdf = async () => {
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-
-    const form = pdfDoc.getForm();
-    // const nameField = form.getTextField('Name of Seller or Sellers:');
-    setPdfDoc(pdfDoc);
-    setEditablePdfBytes(await pdfDoc.save()); // Save initial state
-
-    // const form = pdfDoc.getForm();
-  };
-
-  const handleEdit = async () => {
-    console.log("edit pdf");
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    console.log(pdfDoc);
-    const pages = pdfDoc.getPages();
-    const firstPage = pages[0];
-    const { width, height } = firstPage.getSize();
-
-    // firstPage.drawText("Edited text", {
-    //   x: 50,
-    //   y: height - 50,
-    //   size: 30,
-    //   //   color: pdfLib.rgb(0, 0, 0),
-    // });
-
-    // const editedPdfBytes = await pdfDoc.save();
-    // // setPdfBytes(editedPdfBytes);
-    // setEditablePdfBytes(editedPdfBytes);
     setShow(true);
   };
 
@@ -79,16 +53,10 @@ const PdfEditor = ({ filename }) => {
       <button onClick={handleLoadPdf}>Load</button>
       <button onClick={handleSave}>Save PDF</button>
       {/* <embed src={URL.createObjectURL(new Blob([pdfBytes]))} width="600" height="800" /> */}
-      {editablePdfBytes && (
-        <Worker
-          workerUrl={`https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js`}
-        >
-          <Viewer
-            fileUrl={URL.createObjectURL(
-              new Blob([editablePdfBytes], { type: "application/pdf" })
-            )}
-          />
-        </Worker>
+      {show && (
+        <div>
+          <iframe src={pdfFile} width="100%" height="500px" />
+        </div>
       )}
     </div>
   );
