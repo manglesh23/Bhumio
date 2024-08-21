@@ -13,6 +13,7 @@ const PdfEditor = ({ filename }) => {
   const [editablePdfBytes, setEditablePdfBytes] = useState(null);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [show, setShow] = useState(false);
+
   const [pdfFile, setPdfFile] = useState();
 
   useEffect(() => {
@@ -40,51 +41,50 @@ const PdfEditor = ({ filename }) => {
   };
 
   const handleSave = async () => {
-    try{
-    console.log("save pdf file");
-    console.log("pdf file url:-", pdfFile);
-    console.log(pdfBytes);
+    try {
+      console.log("save pdf file");
+      console.log("pdf file url:-", pdfFile);
+      console.log(pdfBytes);
 
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const editedPdfBytes = await pdfDoc.save();
-    const formData = new FormData();
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const editedPdfBytes = await pdfDoc.save();
+      const formData = new FormData();
 
-    formData.append(
-      "pdf",
-      new Blob([editedPdfBytes], { type: "application/pdf" }),
-      "example.pdf"
-    );
+      formData.append(
+        "pdf",
+        new Blob([editedPdfBytes], { type: "application/pdf" }),
+        "example.pdf"
+      );
 
-    console.log("Form Data:-",formData);
-    for (let pair of formData.entries()) {
-      console.log(`for loop ${pair[0]}` , pair[1]);
-    }
-
-    // let data = new FormData();
-    // data.append(
-    //   "file",
-    //   fs.createReadStream("/C:/Users/Manglesh yadav/Downloads/example.pdf")
-    // );
-
-    let config = {
-      method: "post",
-      maxBodyLength: Infinity,
-      url: "http://localhost:8000/upload",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
-    };
-
-    let response = await axios(config);
-    console.log(response);
-    }catch(e){
-      return{
-        error:true,
-        details:e
+      console.log("Form Data:-", formData);
+      for (let pair of formData.entries()) {
+        console.log(`for loop ${pair[0]}`, pair[1]);
       }
+
+      // let data = new FormData();
+      // data.append(
+      //   "file",
+      //   fs.createReadStream("/C:/Users/Manglesh yadav/Downloads/example.pdf")
+      // );
+
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: "http://localhost:8000/upload",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        data: formData,
+      };
+
+      let response = await axios(config);
+      console.log(response);
+    } catch (e) {
+      return {
+        error: true,
+        details: e,
+      };
     }
-   
   };
 
   return (
