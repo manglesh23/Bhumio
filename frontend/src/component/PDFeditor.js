@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { PDFDocument } from "pdf-lib";
 import axios from "axios";
+// const fs = require("fs");
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -21,14 +22,14 @@ const PdfEditor = ({ filename }) => {
         maxBodyLength: Infinity,
         url: "http://localhost:8000/pdf/example.pdf",
         headers: {},
-        // responseType: "arraybuffer",
+        responseType: "arraybuffer",
       };
 
       let response = await axios(config);
-
-      console.log("Response:-", response.config.url);
+      console.log(response);
+      console.log("Response url:-", response.config.url);
       setPdfFile(response.config.url);
-      //   const arrayBuffer = await response.data.arrayBuffer();
+
       setPdfBytes(response.data);
     };
     fetchPdf();
@@ -39,13 +40,51 @@ const PdfEditor = ({ filename }) => {
   };
 
   const handleSave = async () => {
-    const formData = new FormData();
-    formData.append("file", new Blob([pdfBytes], { type: "application/pdf" }));
+    try{
+    console.log("save pdf file");
+    console.log("pdf file url:-", pdfFile);
+    console.log(pdfBytes);
 
-    await fetch(`/pdf/${filename}`, {
-      method: "POST",
-      body: formData,
-    });
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const editedPdfBytes = await pdfDoc.save();
+    const formData = new FormData();
+
+    formData.append(
+      "pdf",
+      new Blob([editedPdfBytes], { type: "application/pdf" }),
+      "example.pdf"
+    );
+
+    console.log("Form Data:-",formData);
+    for (let pair of formData.entries()) {
+      console.log(`for loop ${pair[0]}` , pair[1]);
+    }
+
+    // let data = new FormData();
+    // data.append(
+    //   "file",
+    //   fs.createReadStream("/C:/Users/Manglesh yadav/Downloads/example.pdf")
+    // );
+
+    let config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "http://localhost:8000/upload",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+    };
+
+    let response = await axios(config);
+    console.log(response);
+    }catch(e){
+      return{
+        error:true,
+        details:e
+      }
+    }
+   
   };
 
   return (
@@ -55,7 +94,7 @@ const PdfEditor = ({ filename }) => {
       {/* <embed src={URL.createObjectURL(new Blob([pdfBytes]))} width="600" height="800" /> */}
       {show && (
         <div>
-          <iframe src={pdfFile} width="100%" height="500px" />
+          <iframe src={pdfFile} width="100%" height="800px" />
         </div>
       )}
     </div>
