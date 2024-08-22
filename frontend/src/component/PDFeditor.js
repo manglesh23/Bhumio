@@ -5,6 +5,8 @@ import axios from "axios";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PdfEditor = ({ filename }) => {
   console.log("File Name:-", filename);
@@ -78,10 +80,9 @@ const PdfEditor = ({ filename }) => {
       };
 
       let response = await axios(config);
-      if(response.data){
-        alert('File has been saved successfully');
-      }
-      console.log(response);
+      console.log("File Saved:-", response);
+
+      toast.success("File has been saved successfully");
     } catch (e) {
       return {
         error: true,
@@ -128,7 +129,8 @@ const PdfEditor = ({ filename }) => {
       >
         Save PDF
       </button>
-     
+      <ToastContainer />
+
       {show && (
         <div>
           <iframe src={pdfFile} width="100%" height="800px" />
