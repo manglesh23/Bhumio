@@ -78,6 +78,9 @@ const PdfEditor = ({ filename }) => {
       };
 
       let response = await axios(config);
+      if(response.data){
+        alert('File has been saved successfully');
+      }
       console.log(response);
     } catch (e) {
       return {
@@ -89,9 +92,43 @@ const PdfEditor = ({ filename }) => {
 
   return (
     <div>
-      <button onClick={handleLoadPdf}>Load</button>
-      <button onClick={handleSave}>Save PDF</button>
-      {/* <embed src={URL.createObjectURL(new Blob([pdfBytes]))} width="600" height="800" /> */}
+      <button
+        onClick={handleLoadPdf}
+        style={{
+          backgroundColor: "#4CAF50", // Green
+          border: "none",
+          color: "white",
+          padding: "10px 20px",
+          textAlign: "center",
+          textDecoration: "none",
+          display: "inline-block",
+          fontSize: "16px",
+          margin: "4px 2px",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        Load
+      </button>
+      <button
+        onClick={handleSave}
+        style={{
+          backgroundColor: "#008CBA", // Blue
+          border: "none",
+          color: "white",
+          padding: "10px 20px",
+          textAlign: "center",
+          textDecoration: "none",
+          display: "inline-block",
+          fontSize: "16px",
+          margin: "4px 300px",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        Save PDF
+      </button>
+     
       {show && (
         <div>
           <iframe src={pdfFile} width="100%" height="800px" />
