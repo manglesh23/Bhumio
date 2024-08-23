@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { PDFDocument } from "pdf-lib";
 import axios from "axios";
-// const fs = require("fs");
+
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -11,13 +11,10 @@ import "react-toastify/dist/ReactToastify.css";
 const PdfEditor = ({ filename }) => {
   console.log("File Name:-", filename);
   const [pdfBytes, setPdfBytes] = useState(null);
-  //   const viewerRef = useRef();
-  const [editablePdfBytes, setEditablePdfBytes] = useState(null);
-  const [pdfDoc, setPdfDoc] = useState(null);
+
   const [show, setShow] = useState(false);
 
   const [pdfFile, setPdfFile] = useState();
-  const [text, setText] = useState();
 
   useEffect(() => {
     const fetchPdf = async () => {
@@ -55,7 +52,6 @@ const PdfEditor = ({ filename }) => {
       return;
     }
     try {
-      console.log("save pdf file");
       console.log("pdf file url:-", pdfFile);
       console.log("pdfbyt:-", pdfBytes);
 
@@ -66,96 +62,63 @@ const PdfEditor = ({ filename }) => {
       const fields = form.getFields();
       console.log("field count", fields.length);
 
-      for (const field of fields) {
+      const fieldData = {};
+
+      fields.forEach((field) => {
         const fieldName = field.getName();
         const fieldType = field.constructor.name;
 
-        console.log(`Field Name: ${fieldName}, Field Type: ${fieldType}`);
-
         if (fieldType === "PDFTextField") {
-          const textField = form.getTextField(fieldName);
-          const value = textField.getText();
-          textField.setText("");
-          console.log(`Value for ${fieldName}: ${value}`);
+          const value = field.getText();
+          fieldData[fieldName] = value;
         } else if (fieldType === "PDFCheckBox") {
-          const checkBox = form.getCheckBox(fieldName);
-          checkBox.check();
+          const isChecked = field.isChecked();
+          fieldData[fieldName] = isChecked;
         } else if (fieldType === "PDFRadioGroup") {
-          const radioGroup = form.getRadioGroup(fieldName);
-
-          // Log the available options
-          const options = radioGroup.getOptions();
-          console.log(`Available options for ${fieldName}:`, options);
-
-          // Select a valid option from the available ones
-          if (options.includes("YES")) {
-            radioGroup.select("YES"); // Example selection
-          } else {
-            console.log(`Skipping ${fieldName}, no valid option selected`);
-          }
+          const selectedOption = field.getSelected();
+          fieldData[fieldName] = selectedOption;
         } else if (fieldType === "PDFDropdown") {
-          const dropdown = form.getDropdown(fieldName);
-          dropdown.select("Dropdown Option");
-        } else if (fieldType === "PDFButton") {
-          console.log(`Skipping button: ${fieldName}`);
+          const selectedOption = field.getSelected();
+          fieldData[fieldName] = selectedOption;
         } else {
-          console.log(`Unhandled field type: ${fieldType}`);
+          fieldData[fieldName] = "Unsupported field type";
         }
-      }
+      });
+
+      console.log("Filed Data:-", fieldData);
 
       const editedPdfBytes = await pdfDoc.save();
       console.log("edited pdf bytes:-", editedPdfBytes.length);
+      const formData = new FormData();
 
-      const response = await fetch("http://localhost:8000/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/pdf",
-        },
-        body: editedPdfBytes,
-      });
+      formData.append(
+        "pdf",
+        new Blob([editedPdfBytes], { type: "application/pdf" }),
+        "example.pdf"
+      );
 
-      if (response.ok) {
-        console.log("PDF saved successfully");
-        toast.success("PDF Saved");
-      } else {
-        console.error("Error saving PDF");
+      console.log("Form Data:-", formData);
+      for (let pair of formData.entries()) {
+        console.log(`for loop ${pair[0]}`, pair[1]);
       }
 
-      // const formData = new FormData();
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: "http://localhost:8000/upload",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        data: formData,
+      };
 
-      // formData.append(
-      //   "pdf",
-      //   new Blob([editedPdfBytes], { type: "application/pdf" }),
-      //   "example.pdf"
-      // );
+      let response = await axios(config);
+      console.log("File Saved:-", response);
 
-      // console.log("Form Data:-", formData);
-      // for (let pair of formData.entries()) {
-      //   console.log(`for loop ${pair[0]}`, pair[1]);
-      // }
-
-      // // let data = new FormData();
-      // // data.append(
-      // //   "file",
-      // //   fs.createReadStream("/C:/Users/Manglesh yadav/Downloads/example.pdf")
-      // // );
-
-      // let config = {
-      //   method: "post",
-      //   maxBodyLength: Infinity,
-      //   url: "http://localhost:8000/upload",
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      //   data: formData,
-      // };
-
-      // let response = await axios(config);
-      // console.log("File Saved:-", response);
-
-      // toast.success("File has been saved successfully");
+      toast.success("File has been saved successfully");
     } catch (e) {
       console.error("error while saving pdf:-", e);
+      toast.error("Failed to save");
       return {
         error: true,
         details: e,
@@ -181,7 +144,7 @@ const PdfEditor = ({ filename }) => {
           borderRadius: "4px",
         }}
       >
-        Load
+        Load PDF
       </button>
       <button
         onClick={handleSave}
