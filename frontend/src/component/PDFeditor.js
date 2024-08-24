@@ -48,7 +48,7 @@ const PdfEditor = ({ filename }) => {
 
   const handleSave = async () => {
     if (!show) {
-      toast.error("Load the file first");
+      toast.error("Please Load The PDF File");
       return;
     }
     try {
@@ -70,16 +70,20 @@ const PdfEditor = ({ filename }) => {
 
         if (fieldType === "PDFTextField") {
           const value = field.getText();
+          console.log(value);
           fieldData[fieldName] = value;
         } else if (fieldType === "PDFCheckBox") {
           const isChecked = field.isChecked();
           fieldData[fieldName] = isChecked;
+          console.log(isChecked);
         } else if (fieldType === "PDFRadioGroup") {
           const selectedOption = field.getSelected();
           fieldData[fieldName] = selectedOption;
+          console.log(selectedOption);
         } else if (fieldType === "PDFDropdown") {
           const selectedOption = field.getSelected();
           fieldData[fieldName] = selectedOption;
+          console.log(selectedOption);
         } else {
           fieldData[fieldName] = "Unsupported field type";
         }
@@ -114,7 +118,7 @@ const PdfEditor = ({ filename }) => {
 
       let response = await axios(config);
       console.log("File Saved:-", response);
-
+      setShow(false);
       toast.success("File has been saved successfully");
     } catch (e) {
       console.error("error while saving pdf:-", e);
